@@ -1,6 +1,5 @@
 use std::io::{self, Write};
 
-#[derive(Copy, Clone)]
 struct Input {
     salary: u32,
     hours: u32,
@@ -38,35 +37,113 @@ impl Input {
     }
 }
 
-struct Tax {
-    box1: u32,
-}
-
-struct Salary {
-    base: Input,
-    hourly: f32,
-    yearly: u32,
+struct Info {
+    hours: u32,
     fte: f32,
+    gross: Salary,
+    tax: Tax,
+    net: Salary,
 }
 
-impl Salary {
-    fn new(input: Input) -> Salary {
-        let hourly = input.salary as f32 / (input.hours as f32 * 4.333);
-        let yearly = (1.08 * (input.salary * 12) as f32) as u32;
-        let fte = input.hours as f32 / 40.0 * 100.0;
-        Salary { base: input, hourly, yearly, fte }
+impl Info {
+    fn new(input: Input) -> Info {
+        let hours = input.hours;
+        let fte = Info::calculate_fte(input.hours);
+        let gross = Salary::new(input.salary, hours);
+        let year = T2021;
+        let tax = Tax::calculate_tax(gross.yearly, &year);
+        let net = Salary::new(tax.calculate_net_salary(gross.yearly), hours);
+        Info { hours, fte, gross, tax, net }
+    }
+
+    fn calculate_fte(hours: u32) -> f32 {
+        hours as f32 / 40.0 * 100.0
+    }
+
+    // TODO: align printing
+    fn print(&self) {
+        println!("\n[Results]");
+        println!("hours:  \t{}", self.hours);
+        println!("FTE:    \t{:.1}%", self.fte);
+        println!("\n[gross]");
+        self.gross.print();
+        println!("\n[tax]");
+        self.tax.print();
+        println!("\n[net]");
+        self.net.print();
     }
 }
 
-trait HeffingsKortingen {
-    fn algemene_heffingskorting(salary: u32) -> u32;
-    fn arbeidskorting(salary: u32) -> u32;
+struct Salary {
+    hourly: f32,
+    monthly: f32,
+    yearly: u32,
 }
 
-struct HK2021;
+impl Salary {
+    fn new(salary: u32, hours: u32) -> Salary {
+        let hourly = salary as f32 / (hours as f32 * 4.333);
+        let monthly = salary as f32;
+        let yearly = (1.08 * (salary * 12) as f32) as u32;
+        Salary { hourly, monthly, yearly}
+    }
 
-impl HeffingsKortingen for HK2021 {
-    fn algemene_heffingskorting(salary: u32) -> u32 {
+    fn print(&self) {
+        println!("salary: \t{}", self.monthly);
+        println!("hourly: \t{:.2}", self.hourly);
+        println!("yearly: \t{}", self.yearly);
+    }
+}
+
+struct Tax {
+    algemene_heffingskorting: u32,
+    arbeidskorting: u32,
+    box1: u32,
+}
+
+impl Tax {
+    fn calculate_tax(year_salary: u32, tax: &(impl HeffingsKortingen + Boxen)) -> Tax {
+        Tax {
+            algemene_heffingskorting: tax.algemene_heffingskorting(year_salary),
+            arbeidskorting: tax.arbeidskorting(year_salary),
+            box1: tax.box1(year_salary),
+        }
+    }
+
+    fn tax_to_pay(&self) -> u32 {
+        self.box1 - (self.algemene_heffingskorting + self.arbeidskorting)
+    }
+    
+    fn calculate_net_salary(&self, gross_yearly: u32) -> u32 {
+        ((gross_yearly - self.tax_to_pay()) as f32 / 1.08) as u32 / 12
+    }
+
+    fn print(&self) {
+        println!("                    box1: {}", self.box1);
+        println!("algemene heffingskorting:  - {}", self.algemene_heffingskorting);
+        println!("          arbeidskorting:  - {}", self.arbeidskorting);
+        println!("                         -----------------");
+        println!("                     tax: {}", self.tax_to_pay());
+    }
+}
+
+// TODO: Generics for traits.
+trait HeffingsKortingen {
+    fn algemene_heffingskorting(&self, salary: u32) -> u32;
+    fn arbeidskorting(&self, salary: u32) -> u32;
+}
+
+trait Boxen {
+    fn box1(&self, salary: u32) -> u32;
+}
+
+// TODO: Move to separate year file.
+struct T2021;
+
+// TODO: Percentage calculation refactor with generics.
+
+impl HeffingsKortingen for T2021 {
+    fn algemene_heffingskorting(&self, salary: u32) -> u32 {
         if salary <= 21_043 {
             2837 
         } else if salary <= 68_507 {
@@ -75,7 +152,8 @@ impl HeffingsKortingen for HK2021 {
             0
         }
     }
-    fn arbeidskorting(salary: u32) -> u32 {
+
+    fn arbeidskorting(&self, salary: u32) -> u32 {
         if salary <= 10_108 {
             (0.04_581 * salary as f32) as u32
         } else if salary <= 21_835 {
@@ -90,14 +168,15 @@ impl HeffingsKortingen for HK2021 {
     }
 }
 
+impl Boxen for T2021 {
+    fn box1(&self, salary: u32) -> u32 {
+        let percentage = if salary <= 68_508 { 0.37_10 } else { 0.49_50 };
+        (percentage * salary as f32).round() as u32
+    }
+}
+
 fn main() {
     let input = Input::get();
-    let salary = Salary::new(input);
-
-    println!("\n[Results]");
-    println!("salary: \t{}", salary.base.salary);
-    println!("hours:  \t{}", salary.base.hours);
-    println!("FTE:    \t{:.1}%", salary.fte);
-    println!("hourly: \t{:.2}", salary.hourly);
-    println!("yearly: \t{}", salary.yearly);
+    let info = Info::new(input);
+    info.print();
 }
