@@ -110,8 +110,8 @@ impl Salary {
 
     fn print(&self) {
         print_row("salary", self.monthly.to_string());
-        print_row("hourly", format!("{:.2}", self.hourly));
         print_row("yearly", self.yearly.to_string());
+        print_row("hourly", format!("{:.2}", self.hourly));
     }
 }
 
@@ -146,27 +146,33 @@ impl Tax {
     }
 }
 
+trait TaxUtil {
+    fn calculate_percentage(&self, percentage: f32, salary: u32) -> u32 {
+        (percentage * (salary as f32)).round() as u32
+    }
+}
+
 // TODO: Generics for traits.
-trait HeffingsKortingen {
+trait HeffingsKortingen: TaxUtil {
     fn algemene_heffingskorting(&self, salary: u32) -> u32;
     fn arbeidskorting(&self, salary: u32) -> u32;
 }
 
-trait Boxen {
+trait Boxen: TaxUtil {
     fn box1(&self, salary: u32) -> u32;
 }
 
 // TODO: Move to separate year file.
 struct T2021;
 
-// TODO: Percentage calculation refactor with generics.
+impl TaxUtil for T2021 {}
 
 impl HeffingsKortingen for T2021 {
     fn algemene_heffingskorting(&self, salary: u32) -> u32 {
         if salary <= 21_043 {
             2837 
         } else if salary <= 68_507 {
-            2837 - ((0.05_977 * (salary - 21_043) as f32) as u32)
+            2837 - self.calculate_percentage(0.05_977, salary - 21_043)
         } else {
             0
         }
@@ -174,13 +180,13 @@ impl HeffingsKortingen for T2021 {
 
     fn arbeidskorting(&self, salary: u32) -> u32 {
         if salary <= 10_108 {
-            (0.04_581 * salary as f32) as u32
+            self.calculate_percentage(0.04_581, salary)
         } else if salary <= 21_835 {
-            463 + ((0.28_771 * (salary - 10_108) as f32) as u32)
+            463 + self.calculate_percentage(0.28_771, salary - 10_108)
         } else if salary <= 35_652 {
-            3_837 + ((0.02_663 * (salary - 21_835) as f32) as u32)
+            3_837 + self.calculate_percentage(0.02_663, salary - 21_835)
         } else if salary <= 105_736 {
-            4_205 - ((0.06 * (salary - 35_652) as f32) as u32)
+            4_205 - self.calculate_percentage(0.06, salary - 35_652)
         } else {
             0
         }
@@ -190,7 +196,7 @@ impl HeffingsKortingen for T2021 {
 impl Boxen for T2021 {
     fn box1(&self, salary: u32) -> u32 {
         let percentage = if salary <= 68_508 { 0.37_10 } else { 0.49_50 };
-        (percentage * salary as f32).round() as u32
+        self.calculate_percentage(percentage, salary)
     }
 }
 
