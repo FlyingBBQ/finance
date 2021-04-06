@@ -1,3 +1,4 @@
+use std::fmt;
 use std::io::{self, Write};
 
 struct Input {
@@ -37,6 +38,23 @@ impl Input {
     }
 }
 
+fn print_title(text: &str) {
+    let title = format!("[{}]", text);
+    println!("\n{:>19}", title);
+}
+
+fn print_row(text: &str, value: String) {
+    println!("{:>18}: \t{}", text, value);
+}
+
+struct Percentage(f32);
+
+impl fmt::Display for Percentage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:.1}%", self.0)
+    }
+}
+
 struct Info {
     hours: u32,
     fte: f32,
@@ -60,16 +78,18 @@ impl Info {
         hours as f32 / 40.0 * 100.0
     }
 
-    // TODO: align printing
     fn print(&self) {
-        println!("\n[Results]");
-        println!("hours:  \t{}", self.hours);
-        println!("FTE:    \t{:.1}%", self.fte);
-        println!("\n[gross]");
+        print_title("Results");
+        print_row("hours", self.hours.to_string());
+        print_row("FTE", Percentage(self.fte).to_string());
+
+        print_title("gross");
         self.gross.print();
-        println!("\n[tax]");
+
+        print_title("tax");
         self.tax.print();
-        println!("\n[net]");
+
+        print_title("net");
         self.net.print();
     }
 }
@@ -89,9 +109,9 @@ impl Salary {
     }
 
     fn print(&self) {
-        println!("salary: \t{}", self.monthly);
-        println!("hourly: \t{:.2}", self.hourly);
-        println!("yearly: \t{}", self.yearly);
+        print_row("salary", self.monthly.to_string());
+        print_row("hourly", format!("{:.2}", self.hourly));
+        print_row("yearly", self.yearly.to_string());
     }
 }
 
@@ -119,11 +139,10 @@ impl Tax {
     }
 
     fn print(&self) {
-        println!("                    box1: {}", self.box1);
-        println!("algemene heffingskorting:  - {}", self.algemene_heffingskorting);
-        println!("          arbeidskorting:  - {}", self.arbeidskorting);
-        println!("                         -----------------");
-        println!("                     tax: {}", self.tax_to_pay());
+        print_row("box1", self.box1.to_string());
+        print_row("heffingskorting", format!("- {}", self.algemene_heffingskorting.to_string()));
+        print_row("arbeidskorting", format!("- {}", self.arbeidskorting.to_string()));
+        print_row("tax", self.tax_to_pay().to_string());
     }
 }
 
