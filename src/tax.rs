@@ -1,4 +1,4 @@
-use crate::info::printing;
+use crate::printing;
 
 pub struct Tax {
     algemene_heffingskorting: u32,
