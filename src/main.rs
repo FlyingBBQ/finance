@@ -65,10 +65,10 @@ impl Info {
     fn new(input: Input) -> Info {
         let hours = input.hours;
         let fte = Info::calculate_fte(input.hours);
-        let gross = Salary::new(input.salary as f32 * fte, hours);
+        let gross = Salary::new(input.salary as f32 * fte, hours, true);
         let year = T2022;
         let tax = Tax::calculate_tax(gross.yearly, &year);
-        let net = Salary::new(tax.calculate_net_salary(gross.yearly) as f32, hours);
+        let net = Salary::new(tax.calculate_net_salary(gross.yearly) as f32, hours, false);
         Info { hours, fte, gross, tax, net }
     }
 
@@ -99,10 +99,10 @@ struct Salary {
 }
 
 impl Salary {
-    fn new(salary: f32, hours: u32) -> Salary {
+    fn new(salary: f32, hours: u32, holiday: bool) -> Salary {
         let hourly = salary / (hours as f32 * 4.333);
         let monthly = salary;
-        let yearly = (1.08 * (salary * 12.0)) as u32;
+        let yearly = (if holiday { 1.08 } else { 1.0 } * (salary * 12.0)) as u32;
         Salary { hourly, monthly, yearly}
     }
 
