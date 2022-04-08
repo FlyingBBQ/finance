@@ -24,10 +24,12 @@ impl Tax {
     }
 
     pub fn print(&self) {
-        printing::print_row("box1", self.box1.to_string());
-        printing::print_row("heffingskorting", format!("- {}", self.algemene_heffingskorting.to_string()));
-        printing::print_row("arbeidskorting", format!("- {}", self.arbeidskorting.to_string()));
-        printing::print_row("tax", self.tax_to_pay().to_string());
+        printing::print_row("yearly", format!("{:>7}", printing::print_int(self.box1)));
+        printing::print_row("heffingskorting",
+            format!("- {}", printing::print_int(self.algemene_heffingskorting)));
+        printing::print_row("arbeidskorting",
+            format!("- {}", printing::print_int(self.arbeidskorting)));
+        printing::print_row("tax", format!("{:>7}", printing::print_int(self.tax_to_pay())));
     }
 
 }

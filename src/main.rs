@@ -25,6 +25,24 @@ pub mod printing {
     pub fn print_row(text: &str, value: String) {
         println!("{:>18}: \t{}", text, value);
     }
+
+    pub fn print_int(i: u32) -> String {
+        let mut s = String::new();
+        let str = i.to_string();
+        let iterator = str.chars().rev().enumerate();
+        for (index, val) in iterator {
+            if index != 0 && index % 3 == 0 {
+                s.insert(0, '.');
+            }
+            s.insert(0, val);
+        }
+        s
+    }
+
+    pub fn print_float(f: f32) -> String {
+        let str = format!("{:.2}", f);
+        str.trim().replace('.', ",").parse().unwrap()
+    }
 }
 
 struct Percentage(f32);
@@ -47,28 +65,27 @@ impl Info {
     fn new(input: Input) -> Info {
         let hours = input.hours;
         let fte = Info::calculate_fte(input.hours);
-        let gross = Salary::new(input.salary, hours);
+        let gross = Salary::new(input.salary as f32 * fte, hours);
         let year = T2022;
         let tax = Tax::calculate_tax(gross.yearly, &year);
-        let net = Salary::new(tax.calculate_net_salary(gross.yearly), hours);
+        let net = Salary::new(tax.calculate_net_salary(gross.yearly) as f32, hours);
         Info { hours, fte, gross, tax, net }
     }
 
     fn calculate_fte(hours: u32) -> f32 {
-        hours as f32 / 40.0 * 100.0
+        hours as f32 / 40.0
     }
 
     fn print(&self) {
         printing::print_title("Results");
         printing::print_row("hours", self.hours.to_string());
-        printing::print_row("FTE", Percentage(self.fte).to_string());
+        printing::print_row("FTE", Percentage(self.fte * 100.0).to_string());
 
         printing::print_title("gross");
         self.gross.print();
 
         printing::print_title("tax");
         self.tax.print();
-        //Tax::call_print(&self.tax);
 
         printing::print_title("net");
         self.net.print();
@@ -82,17 +99,17 @@ struct Salary {
 }
 
 impl Salary {
-    fn new(salary: u32, hours: u32) -> Salary {
-        let hourly = salary as f32 / (hours as f32 * 4.333);
-        let monthly = salary as f32;
-        let yearly = (1.08 * (salary * 12) as f32) as u32;
+    fn new(salary: f32, hours: u32) -> Salary {
+        let hourly = salary / (hours as f32 * 4.333);
+        let monthly = salary;
+        let yearly = (1.08 * (salary * 12.0)) as u32;
         Salary { hourly, monthly, yearly}
     }
 
     fn print(&self) {
-        printing::print_row("salary", self.monthly.to_string());
-        printing::print_row("yearly", self.yearly.to_string());
-        printing::print_row("hourly", format!("{:.2}", self.hourly));
+        printing::print_row("monthly",format!("{:>7}", printing::print_int(self.monthly as u32)));
+        printing::print_row("yearly", format!("{:>7}", printing::print_int(self.yearly)));
+        printing::print_row("hourly", format!("{:>10}", printing::print_float(self.hourly)));
     }
 }
 

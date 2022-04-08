@@ -32,7 +32,6 @@ impl HeffingsKortingen for T2022 {
 
 impl Boxen for T2022 {
     fn box1(&self, salary: u32) -> u32 {
-        // TODO: update values.
         let percentage = if salary <= 69_399 { 0.37_07 } else { 0.49_50 };
         self.calculate_percentage(percentage, salary)
     }
