@@ -25,13 +25,19 @@ impl Tax {
 
     pub fn print(&self) {
         printing::print_row("yearly", format!("{:>7}", printing::print_int(self.box1)));
-        printing::print_row("heffingskorting",
-            format!("- {}", printing::print_int(self.algemene_heffingskorting)));
-        printing::print_row("arbeidskorting",
-            format!("- {}", printing::print_int(self.arbeidskorting)));
-        printing::print_row("tax", format!("{:>7}", printing::print_int(self.tax_to_pay())));
+        printing::print_row(
+            "heffingskorting",
+            format!("- {}", printing::print_int(self.algemene_heffingskorting)),
+        );
+        printing::print_row(
+            "arbeidskorting",
+            format!("- {}", printing::print_int(self.arbeidskorting)),
+        );
+        printing::print_row(
+            "tax",
+            format!("{:>7}", printing::print_int(self.tax_to_pay())),
+        );
     }
-
 }
 
 pub trait TaxUtil {

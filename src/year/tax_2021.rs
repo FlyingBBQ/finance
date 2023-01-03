@@ -1,4 +1,4 @@
-use crate::tax::{TaxUtil, HeffingsKortingen, Boxen};
+use crate::tax::{Boxen, HeffingsKortingen, TaxUtil};
 
 pub struct T2021;
 
@@ -7,7 +7,7 @@ impl TaxUtil for T2021 {}
 impl HeffingsKortingen for T2021 {
     fn algemene_heffingskorting(&self, salary: u32) -> u32 {
         if salary <= 21_043 {
-            2837 
+            2837
         } else if salary <= 68_507 {
             2837 - self.calculate_percentage(0.05_977, salary - 21_043)
         } else {

@@ -8,7 +8,7 @@ pub struct Input {
 impl Input {
     pub fn get() -> Input {
         let salary = Input::input_as_int("salary");
-        let hours = Input::input_as_int("hours"); 
+        let hours = Input::input_as_int("hours");
         Input { salary, hours }
     }
 
@@ -24,10 +24,12 @@ impl Input {
                 .expect("failed to read from stdin");
 
             match input_text.trim().parse() {
-                Ok(int) => if int > 0 {
-                    return int
-                } else {
-                    println!("number must be > 0, retry");
+                Ok(int) => {
+                    if int > 0 {
+                        return int;
+                    } else {
+                        println!("number must be > 0, retry");
+                    }
                 }
                 Err(_) => {
                     println!("not a number, retry");

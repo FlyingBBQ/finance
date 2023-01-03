@@ -6,10 +6,10 @@ mod year {
     pub mod tax_2023;
 }
 
-use std::fmt;
 use crate::input::Input;
 use crate::tax::Tax;
 use crate::year::tax_2023::T2023;
+use std::fmt;
 
 fn main() {
     let input = Input::get();
@@ -70,7 +70,13 @@ impl Info {
         let year = T2023;
         let tax = Tax::calculate_tax(gross.yearly, &year);
         let net = Salary::new(tax.calculate_net_salary(gross.yearly) as f32, hours, false);
-        Info { hours, fte, gross, tax, net }
+        Info {
+            hours,
+            fte,
+            gross,
+            tax,
+            net,
+        }
     }
 
     fn calculate_fte(hours: u32) -> f32 {
@@ -104,13 +110,22 @@ impl Salary {
         let hourly = salary / (hours as f32 * 4.333);
         let monthly = salary;
         let yearly = (if holiday { 1.08 } else { 1.0 } * (salary * 12.0)) as u32;
-        Salary { hourly, monthly, yearly}
+        Salary {
+            hourly,
+            monthly,
+            yearly,
+        }
     }
 
     fn print(&self) {
-        printing::print_row("monthly",format!("{:>7}", printing::print_int(self.monthly as u32)));
+        printing::print_row(
+            "monthly",
+            format!("{:>7}", printing::print_int(self.monthly as u32)),
+        );
         printing::print_row("yearly", format!("{:>7}", printing::print_int(self.yearly)));
-        printing::print_row("hourly", format!("{:>10}", printing::print_float(self.hourly)));
+        printing::print_row(
+            "hourly",
+            format!("{:>10}", printing::print_float(self.hourly)),
+        );
     }
 }
-
