@@ -3,12 +3,13 @@ mod tax;
 mod year {
     pub mod tax_2021;
     pub mod tax_2022;
+    pub mod tax_2023;
 }
 
 use std::fmt;
 use crate::input::Input;
 use crate::tax::Tax;
-use crate::year::tax_2022::T2022;
+use crate::year::tax_2023::T2023;
 
 fn main() {
     let input = Input::get();
@@ -66,7 +67,7 @@ impl Info {
         let hours = input.hours;
         let fte = Info::calculate_fte(input.hours);
         let gross = Salary::new(input.salary as f32 * fte, hours, true);
-        let year = T2022;
+        let year = T2023;
         let tax = Tax::calculate_tax(gross.yearly, &year);
         let net = Salary::new(tax.calculate_net_salary(gross.yearly) as f32, hours, false);
         Info { hours, fte, gross, tax, net }
